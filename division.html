@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bread Fraction Learning Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d63031;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #636e72;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .bread-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            perspective: 1200px;
+            height: 300px;
+        }
+
+        .bread-3d {
+            position: relative;
+            width: 600px;
+            height: 250px;
+            background: linear-gradient(135deg, 
+                #f1c40f 0%, 
+                #f39c12 25%, 
+                #e67e22 50%, 
+                #f39c12 75%, 
+                #f1c40f 100%);
+            border-radius: 150px;
+            box-shadow: 
+                0 25px 50px rgba(0,0,0,0.3),
+                inset 0 8px 20px rgba(255,255,255,0.2),
+                inset 0 -8px 20px rgba(0,0,0,0.1);
+            transform: rotateX(5deg) rotateY(-2deg);
+            transition: transform 0.5s ease;
+            overflow: hidden;
+        }
+
+        .bread-3d:hover {
+            transform: rotateX(8deg) rotateY(-5deg) scale(1.02);
+        }
+
+        .bread-3d::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 60px;
+            right: 60px;
+            height: 100px;
+            background: linear-gradient(to right, 
+                rgba(255,255,255,0.4) 0%, 
+                rgba(255,255,255,0.1) 50%, 
+                rgba(255,255,255,0.4) 100%);
+            border-radius: 100px;
+            filter: blur(3px);
+        }
+
+        .bread-piece {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-right: 2px solid rgba(139, 69, 19, 0.3);
+        }
+
+        .bread-piece:last-child {
+            border-right: none;
+        }
+
+        .bread-piece:hover {
+            background: rgba(116, 185, 255, 0.2);
+            box-shadow: inset 0 0 30px rgba(116, 185, 255, 0.3);
+        }
+
+        .bread-piece.selected {
+            background: rgba(0, 184, 148, 0.3);
+            box-shadow: inset 0 0 40px rgba(0, 184, 148, 0.4);
+        }
+
+        .fraction-label {
+            display: none;
+        }
+
+        .info-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border: 3px dashed #74b9ff;
+            transition: all 0.3s ease;
+        }
+
+        .info-panel.active {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .fraction-display {
+            font-size: 3em;
+            font-weight: bold;
+            color: #d63031;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .info-panel.active .fraction-display {
+            color: #ffeaa7;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            box-shadow: 0 5px 15px rgba(116,185,255,0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+            box-shadow: 0 5px 15px rgba(253,121,168,0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,184,148,0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            text-align: center;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .score-value {
+            font-size: 2em;
+            color: #d63031;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .game-mode {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .mode-btn {
+            margin: 0 10px;
+            padding: 10px 20px;
+            background: #ddd;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            z-index: 1000;
+            pointer-events: none;
+            animation: celebration 2s ease-out;
+        }
+
+        @keyframes celebration {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .bread-info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🍞 Bread Fraction Adventure</h1>
+        <p class="subtitle">Click on the bread pieces to learn fractions!</p>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div>Score</div>
+                <span class="score-value" id="score">0</span>
+            </div>
+            <div class="score-item">
+                <div>Level</div>
+                <span class="score-value" id="level">1</span>
+            </div>
+            <div class="score-item">
+                <div>Streak</div>
+                <span class="score-value" id="streak">0</span>
+            </div>
+        </div>
+
+        <div class="game-mode">
+            <button class="mode-btn active" onclick="setMode('learn')">Learning Mode</button>
+            <button class="mode-btn" onclick="setMode('quiz')">Quiz Mode</button>
+        </div>
+
+        <div class="bread-info" id="breadInfo">This bread is divided into pieces</div>
+
+        <div class="bread-container">
+            <div class="bread-3d" id="bread3d">
+                <!-- Bread pieces will be generated here -->
+            </div>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div id="instruction">Click on the bread pieces to learn about fractions!</div>
+            <div class="fraction-display" id="fractionDisplay">0/4</div>
+            <div id="explanation">Select pieces to see the fraction they represent</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="clearSelection()">Clear Selection</button>
+            <button class="btn btn-primary" onclick="newGame()">New Game</button>
+            <button class="btn btn-success" onclick="showHint()">Hint</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPieces = [];
+        let totalPieces = 4;
+        let gameMode = 'learn';
+        let currentTarget = [0, 1];
+        let score = 0;
+        let level = 1;
+        let streak = 0;
+
+        const possibleDivisions = [2, 3, 4, 5, 6, 8];
+
+        function getRandomDivision() {
+            return possibleDivisions[Math.floor(Math.random() * possibleDivisions.length)];
+        }
+
+        function generateRandomFraction(denominator) {
+            const numerator = Math.floor(Math.random() * denominator) + 1;
+            return [numerator, denominator];
+        }
+
+        function getChallenge(denominator) {
+            const fraction = generateRandomFraction(denominator);
+            const challenges = [
+                `Select ${fraction[0]}/${fraction[1]} of the bread`,
+                `Click ${fraction[0]} out of ${denominator} pieces`,
+                `Make the fraction ${fraction[0]}/${fraction[1]}`,
+                `Choose ${fraction[0]} pieces from ${denominator} total`
+            ];
+            return {
+                fraction: fraction,
+                text: challenges[Math.floor(Math.random() * challenges.length)]
+            };
+        }
+
+        function initializeBread() {
+            const bread3d = document.getElementById('bread3d');
+            bread3d.innerHTML = '';
+            
+            document.getElementById('breadInfo').textContent = `This bread is divided into ${totalPieces} equal pieces`;
+            
+            const pieceWidth = 100 / totalPieces; // Use percentage
+            
+            for (let i = 0; i < totalPieces; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'bread-piece';
+                piece.dataset.index = i;
+                
+                // Position as percentage of the bread width
+                piece.style.left = (i * pieceWidth) + '%';
+                piece.style.width = pieceWidth + '%';
+                
+                piece.addEventListener('click', () => togglePiece(i));
+                bread3d.appendChild(piece);
+            }
+        }
+
+        function togglePiece(index) {
+            const piece = document.querySelector(`[data-index="${index}"]`);
+            const pieceIndex = selectedPieces.indexOf(index);
+            
+            if (pieceIndex > -1) {
+                selectedPieces.splice(pieceIndex, 1);
+                piece.classList.remove('selected');
+            } else {
+                selectedPieces.push(index);
+                piece.classList.add('selected');
+            }
+            
+            selectedPieces.sort((a, b) => a - b);
+            updateDisplay();
+            
+            if (gameMode === 'quiz') {
+                checkAnswer();
+            }
+        }
+
+        function updateDisplay() {
+            const numSelected = selectedPieces.length;
+            const fractionDisplay = document.getElementById('fractionDisplay');
+            const infoPanel = document.getElementById('infoPanel');
+            const explanation = document.getElementById('explanation');
+            
+            fractionDisplay.textContent = `${numSelected}/${totalPieces}`;
+            
+            if (numSelected > 0) {
+                infoPanel.classList.add('active');
+                const simplified = simplifyFraction(numSelected, totalPieces);
+                let explanationText = `You selected ${numSelected} out of ${totalPieces} pieces.`;
+                
+                if (simplified[0] !== numSelected || simplified[1] !== totalPieces) {
+                    explanationText += ` This simplifies to ${simplified[0]}/${simplified[1]}.`;
+                }
+                
+                if (numSelected === totalPieces) {
+                    explanationText += ' That\'s the whole bread!';
+                } else if (numSelected === totalPieces / 2 && totalPieces % 2 === 0) {
+                    explanationText += ' That\'s exactly half the bread!';
+                } else if (numSelected === totalPieces / 4 && totalPieces % 4 === 0) {
+                    explanationText += ' That\'s one quarter of the bread!';
+                } else if (numSelected === (3 * totalPieces) / 4 && totalPieces % 4 === 0) {
+                    explanationText += ' That\'s three quarters of the bread!';
+                }
+                
+                explanation.textContent = explanationText;
+            } else {
+                infoPanel.classList.remove('active');
+                explanation.textContent = 'Select pieces to see the fraction they represent';
+            }
+        }
+
+        function simplifyFraction(numerator, denominator) {
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const divisor = gcd(numerator, denominator);
+            return [numerator / divisor, denominator / divisor];
+        }
+
+        function clearSelection() {
+            selectedPieces = [];
+            document.querySelectorAll('.bread-piece').forEach(piece => {
+                piece.classList.remove('selected');
+            });
+            updateDisplay();
+        }
+
+        function newGame() {
+            totalPieces = getRandomDivision();
+            clearSelection();
+            initializeBread();
+            updateDisplay();
+            
+            if (gameMode === 'quiz') {
+                newChallenge();
+            } else {
+                document.getElementById('instruction').textContent = 'Click on the bread pieces to learn about fractions!';
+            }
+        }
+
+        function setMode(mode) {
+            gameMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (mode === 'quiz') {
+                newChallenge();
+            } else {
+                document.getElementById('instruction').textContent = 'Click on the bread pieces to learn about fractions!';
+                clearSelection();
+            }
+        }
+
+        function newChallenge() {
+            if (gameMode !== 'quiz') return;
+            
+            clearSelection();
+            const challenge = getChallenge(totalPieces);
+            currentTarget = challenge.fraction;
+            
+            document.getElementById('instruction').textContent = challenge.text;
+            document.getElementById('explanation').textContent = `Target: ${currentTarget[0]}/${currentTarget[1]}`;
+        }
+
+        function checkAnswer() {
+            if (gameMode !== 'quiz') return;
+            
+            const numSelected = selectedPieces.length;
+            const targetNumerator = currentTarget[0];
+            
+            if (numSelected === targetNumerator) {
+                score += 10 * level;
+                streak++;
+                
+                if (streak % 3 === 0) {
+                    level++;
+                }
+                
+                updateScoreboard();
+                showCelebration('🎉 Perfect!');
+                
+                setTimeout(() => {
+                    newGame(); // Start a completely new game with random division
+                }, 2000);
+            }
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('streak').textContent = streak;
+        }
+
+        function showHint() {
+            if (gameMode === 'quiz' && currentTarget) {
+                alert(`Hint: You need to select ${currentTarget[0]} pieces to make ${currentTarget[0]}/${currentTarget[1]}!`);
+            } else {
+                alert('Try selecting different numbers of pieces to see how fractions work!');
+            }
+        }
+
+        function showCelebration(text) {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.textContent = text;
+            document.body.appendChild(celebration);
+            
+            setTimeout(() => {
+                if (document.body.contains(celebration)) {
+                    document.body.removeChild(celebration);
+                }
+            }, 2000);
+        }
+
+        // Initialize the game
+        newGame();
+    </script>
+</body>
+</html>

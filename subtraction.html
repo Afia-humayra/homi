@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Subtraction Blaster</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d2d5a 100%);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #fff, transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, #fff, transparent),
+                radial-gradient(2px 2px at 160px 30px, #fff, transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: twinkle 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .command-panel {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+            to { box-shadow: 0 0 30px rgba(0, 255, 136, 0.8); }
+        }
+
+        .command-text {
+            color: #00ff88;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+        }
+
+        .game-area {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 15px;
+            margin-bottom: 100px;
+        }
+
+        .alien {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8B5CF6, #A855F7);
+            border-radius: 50%;
+            position: relative;
+            cursor: crosshair;
+            transition: all 0.3s ease;
+            border: 2px solid #C084FC;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .alien:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.8);
+        }
+
+        .alien::before {
+            content: '👽';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 35px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .alien.destroyed {
+            animation: explode 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 0.7; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        .alien.survivor {
+            animation: cheer 1s ease-in-out;
+            border-color: #10B981;
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        @keyframes cheer {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .spaceship {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            border: 3px solid #60A5FA;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            animation: hover 2s ease-in-out infinite alternate;
+        }
+
+        .spaceship::before {
+            content: '🔫';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+        }
+
+        @keyframes hover {
+            from { transform: translateX(-50%) translateY(0px); }
+            to { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .result-panel {
+            background: linear-gradient(135deg, #1F2937, #374151);
+            border: 3px solid #F59E0B;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+            display: none;
+        }
+
+        .result-text {
+            color: #F59E0B;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+        }
+
+        .next-button {
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px 24px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .next-button:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .progress {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+        }
+
+        .explosion {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            animation: sparkle 1s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #F59E0B;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stars"></div>
+    
+    <div class="game-container">
+        <div class="progress">Problem <span id="currentProblem">1</span> of 15</div>
+        <div class="score">Score: <span id="score">0</span></div>
+        
+        <div class="command-panel" id="commandPanel">
+            <div class="command-text" id="commandText">
+                🔫 Destroy <span id="targetNumber">0</span> aliens from <span id="totalNumber">0</span>!
+                Click on the aliens to shoot them down!
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <!-- Aliens will be generated here -->
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-text" id="resultText">Great job! 5 aliens left!</div>
+            <button class="next-button" id="nextButton" onclick="nextProblem()">Next Mission 🔫</button>
+        </div>
+
+        <div class="spaceship"></div>
+        <div id="nextLevel" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:40px; border-radius:20px; text-align:center; z-index:2000;">
+    <h2>🚀 Mission Complete! 🚀</h2>
+    <a href="subcard.html" style="display:inline-block; background:linear-gradient(135deg,#8B5CF6,#A855F7); color:white; padding:20px 40px; text-decoration:none; border-radius:15px; font-size:1.3em; margin:20px;">🎯 Subtraction Cards</a>
+    <br><button onclick="location.reload()" style="background:#6c757d; color:white; border:none; padding:15px 30px; border-radius:10px; cursor:pointer;">🔄 Play Again</button>
+</div>
+    </div>
+
+    <script>
+        let currentProblemIndex = 0;
+        let aliensDestroyed = 0;
+        let targetDestroy = 0;
+        let totalAliens = 0;
+        let score = 0;
+
+        // 15 pre-designed problems (easy to harder)
+        const problems = [
+            {total: 5, destroy: 2}, // 5-2=3
+            {total: 6, destroy: 4}, // 6-4=2
+            {total: 8, destroy: 3}, // 8-3=5
+            {total: 7, destroy: 5}, // 7-5=2
+            {total: 9, destroy: 4}, // 9-4=5
+            {total: 10, destroy: 3}, // 10-3=7
+            {total: 11, destroy: 6}, // 11-6=5
+            {total: 12, destroy: 7}, // 12-7=5
+            {total: 10, destroy: 8}, // 10-8=2
+            {total: 14, destroy: 9}, // 14-9=5
+            {total: 15, destroy: 8}, // 15-8=7
+            {total: 13, destroy: 6}, // 13-6=7
+            {total: 16, destroy: 9}, // 16-9=7
+            {total: 18, destroy: 11}, // 18-11=7
+            {total: 20, destroy: 12}  // 20-12=8
+        ];
+
+        function initGame() {
+            loadProblem();
+        }
+
+        function loadProblem() {
+            const problem = problems[currentProblemIndex];
+            totalAliens = problem.total;
+            targetDestroy = problem.destroy;
+            aliensDestroyed = 0;
+
+            document.getElementById('currentProblem').textContent = currentProblemIndex + 1;
+            document.getElementById('targetNumber').textContent = targetDestroy;
+            document.getElementById('totalNumber').textContent = totalAliens;
+            document.getElementById('resultPanel').style.display = 'none';
+            document.getElementById('commandPanel').style.display = 'block';
+
+            generateAliens();
+        }
+
+        function generateAliens() {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+
+            for (let i = 0; i < totalAliens; i++) {
+                const alien = document.createElement('div');
+                alien.className = 'alien';
+                alien.style.animationDelay = `${i * 0.1}s`;
+                alien.addEventListener('click', destroyAlien);
+                gameArea.appendChild(alien);
+            }
+        }
+
+        function destroyAlien(event) {
+            if (aliensDestroyed >= targetDestroy) return;
+            
+            const alien = event.target;
+            if (alien.classList.contains('destroyed')) return;
+
+            // Create explosion effect
+            createExplosion(event.clientX, event.clientY);
+            
+            alien.classList.add('destroyed');
+            aliensDestroyed++;
+
+            // Play sound effect (visual feedback)
+            alien.style.pointerEvents = 'none';
+
+            if (aliensDestroyed === targetDestroy) {
+                setTimeout(() => {
+                    showResult();
+                }, 800);
+            }
+        }
+
+        function createExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = '💥✨';
+            explosion.style.left = (x - 20) + 'px';
+            explosion.style.top = (y - 20) + 'px';
+            document.body.appendChild(explosion);
+
+            setTimeout(() => {
+                document.body.removeChild(explosion);
+            }, 1000);
+        }
+
+        function showResult() {
+            const remaining = totalAliens - aliensDestroyed;
+            const aliens = document.querySelectorAll('.alien:not(.destroyed)');
+            
+            // Make survivors cheer
+            aliens.forEach((alien, index) => {
+                setTimeout(() => {
+                    alien.classList.add('survivor');
+                }, index * 100);
+            });
+
+            // Show result panel
+            setTimeout(() => {
+                document.getElementById('commandPanel').style.display = 'none';
+                document.getElementById('resultPanel').style.display = 'block';
+                document.getElementById('resultText').textContent = 
+                    `🎉 Perfect! ${remaining} aliens left! (${totalAliens} - ${targetDestroy} = ${remaining})`;
+                
+                // Update score
+                score += 10;
+                document.getElementById('score').textContent = score;
+            }, 500);
+        }
+
+        function nextProblem() {
+    currentProblemIndex++;
+    
+    if (currentProblemIndex >= 15) {
+        document.getElementById('nextLevel').style.display = 'block';
+        return;
+    }
+    
+    currentProblemIndex = currentProblemIndex % problems.length;
+    loadProblem();
+}
+
+        // Initialize the game
+        initGame();
+    </script>
+</body>
+</html>

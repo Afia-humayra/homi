@@ -1,0 +1,12 @@
+sudo apt-get install portaudio19-dev
+pip install SpeechRecognition pyaudio
+sudo apt-get install espeak
+pip install pyttsx3
+
+
+
+sudo apt install -y libopencv-dev python3-opencv libv4l-dev v4l-utils libgtk-3-dev libavcodec-dev libavformat-dev libswscale-dev python3 python3-pip
+
+
+pip install opencv-python mediapipe
+pip install numpy matplotlib mediapipe

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Math Learning - Apple Addition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 3em;
+            color: #2E8B57;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: #FF6B6B;
+            margin-bottom: 20px;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .tree-section {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 400px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+.tree {
+    width: 300px;
+    height: 350px;
+    position: relative;
+    background-image: url('./images/tree.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+}
+
+.trunk {
+    display: none;
+}
+
+.leaves {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.apple {
+    touch-action: none; /* Prevents scrolling when dragging */
+    width: 35px;
+    height: 35px;
+    /* PUT YOUR APPLE IMAGE HERE */
+    background-image: url('./images/apple.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: absolute;
+    cursor: grab;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.apple:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+.apple:before {
+    display: none;
+}
+        .apple.in-basket {
+            position: relative;
+            margin: 5px;
+            display: inline-block;
+            cursor: default;
+            animation: drop 0.5s ease;
+        }
+
+        @keyframes drop {
+            0% { transform: translateY(-100px) scale(1.2); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .basket-section {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+.basket {
+    width: 200px;
+    height: 100px;
+    /* PUT YOUR BASKET IMAGE HERE */
+    background-image: url('./images/basket.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+    min-height: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 10px;
+}
+
+.basket:before {
+    display: none;
+}
+
+        .math-display {
+            text-align: center;
+            font-size: 2em;
+            color: #2E8B57;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            font-size: 2em;
+            color: #2E8B57;
+            display: none;
+            animation: celebrationPop 0.5s ease;
+        }
+
+        @keyframes celebrationPop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .finger-counting {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 20px;
+        }
+
+        .hand {
+            font-size: 3em;
+            animation: wiggle 2s infinite;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .drop-zone {
+            border: 3px dashed #FFD700;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            background: rgba(255, 255, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(255, 255, 0, 0.3);
+            border-color: #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title"> Fun Math Learning </h1>
+            <p class="subtitle">Learn Addition by Collecting Apples!</p>
+        </div>
+        <div class="game-area">
+            <div class="controls">
+                <button class="btn" onclick="startNewGame()"> Try again </button>
+            </div>
+
+            <div class="tree-section">
+                <div class="tree">
+                    <div class="trunk"></div>
+                    <div class="leaves" id="treeArea"></div>
+                </div>
+            </div>
+
+            <div class="drop-zone basket-section">
+                <div class="basket" id="basket"></div>
+            </div>
+
+            <div class="math-display" id="mathDisplay">
+                Drag all the apples from the tree to the basket to learn addition! 🍎
+            </div>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration">
+        🎉 Great Job! You're a Math Star! 🌟
+    </div>
+    <div id="nextLevel" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:40px; border-radius:20px; text-align:center; z-index:2000;">
+    <h2>🎉 Level Complete! 🎉</h2>
+    <a href="addcard.html" style="display:inline-block; background:linear-gradient(45deg,#28a745,#20c997); color:white; padding:20px 40px; text-decoration:none; border-radius:15px; font-size:1.3em; margin:20px;">🚀 Next Level</a>
+    <br><button onclick="location.reload()" style="background:#6c757d; color:white; border:none; padding:15px 30px; border-radius:10px; cursor:pointer;">🔄 Play Again</button>
+</div>
+
+    <script>
+        let gameState = {
+            basketApples: 0,
+            treeApples: 0,
+            totalApples: 0,
+            gameComplete: false
+        };
+
+function getRandomPosition(container) {
+    // Define exact pixel positions where apples should appear on YOUR tree
+    // These are relative to a 300x350 tree container
+    const applePositions = [
+        { x: 80, y: 60 },   // Top area of leaves
+        { x: 180, y: 80 },  // Top right leaves  
+        { x: 50, y: 120 },  // Left side leaves
+        { x: 220, y: 140 }, // Right side leaves
+        { x: 120, y: 100 }, // Center top
+        { x: 160, y: 160 }, // Center right
+        { x: 90, y: 180 },  // Left middle
+        { x: 200, y: 120 }, // Right upper
+        { x: 140, y: 200 }, // Center bottom
+        { x: 70, y: 160 },  // Left lower
+        { x: 190, y: 180 }, // Right lower
+        { x: 110, y: 140 }  // Center middle
+    ];
+    
+    // Pick a random position from our predefined spots
+    const randomIndex = Math.floor(Math.random() * applePositions.length);
+    const position = applePositions[randomIndex];
+    
+    // Add a little random variation (±10 pixels) so apples don't overlap exactly
+    return {
+        x: position.x + (Math.random() - 0.5) * 20,
+        y: position.y + (Math.random() - 0.5) * 20
+    };
+}
+
+        function createApple(container, isOnTree = true) {
+            const apple = document.createElement('div');
+            apple.className = 'apple';
+            apple.draggable = true;
+            
+            if (isOnTree) {
+                const pos = getRandomPosition(container);
+                apple.style.left = pos.x + 'px';
+                apple.style.top = pos.y + 'px';
+            }
+
+            apple.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', '');
+                apple.style.opacity = '0.5';
+            });
+
+            apple.addEventListener('dragend', () => {
+                apple.style.opacity = '1';
+            });
+
+            container.appendChild(apple);
+            return apple;
+            
+
+    }
+
+        function startNewGame() {
+            const treeArea = document.getElementById('treeArea');
+            const basket = document.getElementById('basket');
+            
+            // Clear previous game
+            treeArea.innerHTML = '';
+            basket.innerHTML = '';
+            
+            // Random number of apples (2-8)
+            const basketCount = Math.floor(Math.random() * 4) + 1; // 1-4 in basket
+            const treeCount = Math.floor(Math.random() * 5) + 2;   // 2-6 on tree
+            
+            gameState = {
+                basketApples: basketCount,
+                treeApples: treeCount,
+                totalApples: basketCount + treeCount,
+                gameComplete: false
+            };
+
+            // Add initial apples to basket
+            for (let i = 0; i < basketCount; i++) {
+                const apple = createApple(basket, false);
+                apple.classList.add('in-basket');
+                apple.draggable = false;
+            }
+
+            // Add apples to tree
+            for (let i = 0; i < treeCount; i++) {
+                createApple(treeArea, true);
+            }
+
+            updateMathDisplay();
+            setupDropZone();
+        }
+
+        function setupDropZone() {
+            const basket = document.getElementById('basket');
+            const dropZone = document.querySelector('.drop-zone');
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                
+                const draggedApple = document.querySelector('.apple[style*="opacity: 0.5"]');
+                if (draggedApple && !draggedApple.classList.contains('in-basket')) {
+                    // Remove from tree
+                    draggedApple.remove();
+                    
+                    // Add to basket
+                    const newApple = createApple(basket, false);
+                    newApple.classList.add('in-basket');
+                    newApple.draggable = false;
+                    
+                    gameState.treeApples--;
+                    gameState.basketApples++;  // increase basket count
+                    updateMathDisplay();
+                    
+                    if (gameState.treeApples === 0) {
+                        setTimeout(celebrate, 500);
+                    }
+                }
+            });
+        }
+
+        function updateMathDisplay() {
+    const display = document.getElementById('mathDisplay');
+    
+    if (gameState.treeApples > 0) {
+        display.innerHTML = `
+            Basket has: <strong>${gameState.basketApples}</strong> apples<br>
+            Tree has: <strong>${gameState.treeApples}</strong> apples waiting<br>
+            When you collect all apples: ${gameState.basketApples} + ${gameState.treeApples} = <strong>${gameState.totalApples}</strong>
+        `;
+    } else {
+        display.innerHTML = `
+            Perfect! You collected all apples!<br>
+            <strong>${gameState.basketApples} + ${gameState.totalApples - gameState.basketApples} = ${gameState.totalApples}</strong><br>
+            Total apples in basket: <strong>${gameState.totalApples}</strong>
+        `;
+    }
+}
+
+
+
+        function celebrate() {
+    const celebration = document.getElementById('celebration');
+    celebration.style.display = 'block';
+    
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => createConfetti(), i * 100);
+    }
+    
+    setTimeout(() => {
+        celebration.style.display = 'none';
+        document.getElementById('nextLevel').style.display = 'block';  // Show next level screen
+    }, 3000);
+}
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.innerHTML = '✨';
+            confetti.style.position = 'fixed';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = '-10px';
+            confetti.style.fontSize = '2em';
+            confetti.style.zIndex = '999';
+            confetti.style.animation = 'fall 3s linear forwards';
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }
+
+        // Add falling animation for confetti
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Start first game when page loads
+        window.onload = () => {
+            startNewGame();
+        };
+    </script>
+</body>
+</html>

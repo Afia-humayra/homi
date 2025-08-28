@@ -1,0 +1,745 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plastic Cleanup Hero</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e88e5, #42a5f5);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-header {
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #0277bd;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: #555;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(145deg, #4fc3f7, #29b6f6);
+            padding: 15px 25px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .level-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .level-title {
+            color: #0277bd;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .level-description {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 15px;
+    min-height: 150px;
+}
+
+.plastic-item {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    position: relative;
+    background: linear-gradient(145deg, #ff7043, #ff5722);
+    color: white;
+    text-align: center;
+}
+
+
+        .plastic-item:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .plastic-item:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .item-label {
+            font-size: 0.35em;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .drop-zones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.drop-zone {
+    min-height: 120px;
+    border: 4px dashed #29b6f6;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    color: #0277bd;
+    transition: all 0.3s ease;
+    background: rgba(41, 182, 246, 0.1);
+    position: relative;
+    font-size: 0.9em;
+}
+
+
+        .drop-zone.drag-over {
+            border-color: #ff5722;
+            background: rgba(255, 87, 34, 0.15);
+            transform: scale(1.05);
+        }
+
+        .drop-zone.correct {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.2);
+            animation: success-pulse 0.8s ease;
+        }
+
+        .drop-zone.incorrect {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.2);
+            animation: error-shake 0.6s ease;
+        }
+
+        @keyframes success-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes error-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px); }
+            75% { transform: translateX(15px); }
+        }
+
+        .bin-icon {
+    font-size: 2.2em;
+    margin-bottom: 8px;
+}
+
+.bin-label {
+    font-size: 1em;
+}
+
+.bin-description {
+    font-size: 0.75em;
+}
+
+        .progress-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 15px 0;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    width: 0%;
+    transition: width 0.8s ease;
+    border-radius: 12px;
+}
+
+        .fact-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            display: none;
+            animation: popupAppear 0.5s ease;
+        }
+
+        @keyframes popupAppear {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .fact-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .fact-title {
+            color: #0277bd;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .fact-content {
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .popup-btn {
+            background: linear-gradient(145deg, #4fc3f7, #29b6f6);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .completion-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            border-radius: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            z-index: 100;
+        }
+
+        .completion-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        .real-world-actions {
+            background: rgba(255,255,255,0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            max-width: 500px;
+        }
+
+        .action-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .action-item {
+            background: rgba(255,255,255,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .restart-btn {
+            background: linear-gradient(145deg, #ff7043, #ff5722);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2em; }
+            .items-container { grid-template-columns: repeat(3, 1fr); }
+            .plastic-item { width: 80px; height: 80px; font-size: 2em; }
+            .drop-zones { grid-template-columns: 1fr; }
+            .fact-popup { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <h1> Plastic Cleanup </h1>
+    </div>
+
+    <div class="game-container">
+        <div class="game-area">
+            <div class="level-info">
+                <p class="level-description">
+                    Drag different plastic items to the correct bins. Click on items to learn amazing facts about plastic pollution and how YOU can help save our planet! 🌱
+                </p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+
+            <div class="items-container" id="items-container">
+            </div>
+
+            <div class="drop-zones">
+                <div class="drop-zone" data-type="recyclable">
+                    <div class="bin-icon">♻️</div>
+                    <div class="bin-label">Recyclable Plastics</div>
+                    <div class="bin-description">Clean bottles, containers, bags</div>
+                </div>
+                
+                <div class="drop-zone" data-type="non-recyclable">
+                    <div class="bin-icon">🗑️</div>
+                    <div class="bin-label">Non-Recyclable Trash</div>
+                    <div class="bin-description">Dirty or mixed plastic items</div>
+                </div>
+                
+                <div class="drop-zone" data-type="hazardous">
+                    <div class="bin-icon">⚠️</div>
+                    <div class="bin-label">Hazardous Waste</div>
+                    <div class="bin-description">Items harmful to marine life</div>
+                </div>
+                
+                <div class="drop-zone" data-type="reusable">
+                    <div class="bin-icon">🔄</div>
+                    <div class="bin-label">Reusable Items</div>
+                    <div class="bin-description">Items that can be used again</div>
+                </div>
+            </div>
+
+            <div class="completion-screen" id="completion-screen">
+                <div class="completion-title">🎉 Ocean Hero! 🌊</div>
+                <p style="font-size: 1.3em; margin-bottom: 20px;">You've successfully sorted all plastic waste!</p>
+                
+                <div class="real-world-actions">
+                    <div class="action-title">🌍 Take Action Today!</div>
+                    <div class="action-item" id="daily-action">
+                        <!-- Dynamic daily action will appear here -->
+                    </div>
+                </div>
+                
+                <button class="restart-btn" onclick="restartGame()">Clean Up More Plastic! 🌱</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Educational Popup -->
+    <div class="popup-overlay" id="popup-overlay" onclick="closePopup()"></div>
+    <div class="fact-popup" id="fact-popup">
+        <div class="fact-icon" id="fact-icon"></div>
+        <div class="fact-title" id="fact-title"></div>
+        <div class="fact-content" id="fact-content"></div>
+        <button class="popup-btn" onclick="closePopup()">Got it! Let's Save the Ocean! 🌊</button>
+    </div>
+
+    <script>
+        let gameState = {
+            itemsSorted: 0,
+            factsLearned: 0,
+            totalItems: 12,
+            planetHealth: 100,
+            learnedFacts: new Set()
+        };
+
+        const plasticItems = [
+            {
+                id: 'water-bottle',
+                img: 'images/waterbottle.png',
+                name: 'Water Bottle',
+                type: 'recyclable',
+                fact: {
+                    icon: '♻️',
+                    title: 'Amazing Water Bottle Facts!',
+                    content: 'A plastic water bottle takes 450 years to decompose! But when recycled properly, it can become new bottles, clothing, or even park benches. Always rinse bottles before recycling!'
+                }
+            },
+            {
+                id: 'plastic-bag',
+                img: 'images/plasticbag.png',
+                name: 'Plastic Bag',
+                type: 'hazardous',
+                fact: {
+                    icon: '🐢',
+                    title: 'Plastic Bags & Sea Turtles',
+                    content: 'Sea turtles mistake plastic bags for jellyfish and eat them, which can be deadly! Over 1 trillion plastic bags are used worldwide each year. Use reusable bags instead!'
+                }
+            },
+            {
+                id: 'food-container',
+                img: 'images/foodcontainer.png',
+                name: 'Food Container',
+                type: 'recyclable',
+                fact: {
+                    icon: '🍽️',
+                    title: 'Food Container Facts',
+                    content: 'Clean food containers can be recycled, but dirty ones contaminate the recycling process. Always clean containers before recycling - it takes just 30 seconds!'
+                }
+            },
+            {
+                id: 'straw',
+                img: 'images/straw.png',
+                name: 'Plastic Straw',
+                type: 'hazardous',
+                fact: {
+                    icon: '🐠',
+                    title: 'The Straw Problem',
+                    content: 'Americans use 500 million plastic straws daily! They harm fish, birds, and marine mammals. Switch to paper, metal, or bamboo straws to help sea life!'
+                }
+            },
+            {
+                id: 'bottle-cap',
+                img: 'images/bottlecap.png',
+                name: 'Bottle Cap',
+                type: 'non-recyclable',
+                fact: {
+                    icon: '🆘',
+                    title: 'Tiny but Deadly Caps',
+                    content: 'Bottle caps are too small for most recycling machines and often end up in the ocean. Sea birds accidentally feed them to their babies. Always keep caps attached to bottles!'
+                }
+            },
+            {
+                id: 'shopping-bag',
+                img: 'images/shoppingbag.png',
+                name: 'Reusable Bag',
+                type: 'reusable',
+                fact: {
+                    icon: '🌱',
+                    title: 'Reusable Bag Power!',
+                    content: 'One reusable bag can replace 1,000 plastic bags over its lifetime! If every person used one reusable bag, we could save billions of plastic bags from polluting our oceans!'
+                }
+            },
+            {
+                id: 'yogurt-cup',
+                img: 'images/yogurtcup.png',
+                name: 'Yogurt Cup',
+                type: 'recyclable',
+                fact: {
+                    icon: '🔄',
+                    title: 'Yogurt Cup Journey',
+                    content: 'Clean yogurt cups can be recycled into new containers, flowerpots, or even playground equipment! Remove all food residue and the foil lid before recycling.'
+                }
+            },
+            {
+                id: 'chip-bag',
+                img: 'images/chipbag.png',
+                name: 'Chip Bag',
+                type: 'non-recyclable',
+                fact: {
+                    icon: '⚡',
+                    title: 'Tricky Chip Bags',
+                    content: 'Chip bags are made of mixed materials (plastic + metal) that can\'t be separated easily. They take 80+ years to decompose! Look for brands using compostable packaging.'
+                }
+            },
+            {
+                id: 'fishing-net',
+                img: 'images/fishingnet.png',
+                name: 'Fishing Net Piece',
+                type: 'hazardous',
+                fact: {
+                    icon: '🐋',
+                    title: 'Ghost Nets Kill',
+                    content: 'Abandoned fishing nets (called "ghost nets") trap whales, dolphins, and sea turtles. They make up 46% of ocean plastic waste! Support sustainable fishing practices.'
+                }
+            },
+            {
+                id: 'water-bottle-clean',
+                img: 'images/waterbottleclean.png',
+                name: 'Clean Water Bottle',
+                type: 'reusable',
+                fact: {
+                    icon: '💪',
+                    title: 'Reusable Bottle Hero!',
+                    content: 'Using a reusable water bottle saves 1,460 plastic bottles per year per person! That\'s enough plastic to make 74 fleece jackets. You\'re a planet hero!'
+                }
+            },
+            {
+                id: 'takeout-container',
+                img: 'images/takeoutcontainer.png',
+                name: 'Takeout Container',
+                type: 'non-recyclable',
+                fact: {
+                    icon: '🏠',
+                    title: 'Takeout Container Truth',
+                    content: 'Most takeout containers have food residue and mixed materials, making them non-recyclable. Americans throw away 2.5 billion pizza boxes annually! Choose restaurants with eco-friendly packaging.'
+                }
+            },
+            {
+                id: 'plastic-fork',
+                img: 'images/plasticfork.png',
+                name: 'Plastic Utensils',
+                type: 'hazardous',
+                fact: {
+                    icon: '🌊',
+                    title: 'Utensils in the Ocean',
+                    content: 'Plastic utensils break into microplastics that fish eat, and then we eat the fish! Bring your own reusable utensils or choose wooden ones when eating out.'
+                }
+            }
+        ];
+
+        const dailyActions = [
+            "🚰 Use a reusable water bottle today instead of buying plastic ones!",
+            "🛍️ Bring a reusable bag next time you go shopping!",
+            "🗑️ Pick up 3 pieces of plastic litter you see outside today!",
+            "🍽️ Choose restaurants that use eco-friendly packaging this week!",
+            "📱 Share what you learned about plastic pollution with a friend!",
+            "🌱 Start a small recycling station in your room or kitchen!",
+            "💡 Turn off lights when leaving a room to save energy for recycling plants!",
+            "🚿 Take shorter showers to save water needed for plastic recycling!",
+            "🎨 Create art using clean plastic containers instead of throwing them away!",
+            "📚 Learn about ocean conservation and share with your family!"
+        ];
+
+        function createItems() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            
+            // Shuffle the items array
+            const shuffledItems = [...plasticItems].sort(() => Math.random() - 0.5);
+            
+            shuffledItems.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'plastic-item';
+                itemEl.dataset.type = item.type;
+                itemEl.dataset.id = item.id;
+                itemEl.draggable = true;
+                itemEl.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" style="width:70%; height:auto; border-radius:10px;">
+    <div class="item-label">${item.name}</div>
+`;
+
+                
+                // Add click for educational popup
+                itemEl.addEventListener('click', () => showFact(item));
+                
+                // Drag events
+                itemEl.addEventListener('dragstart', handleDragStart);
+                itemEl.addEventListener('dragend', handleDragEnd);
+                
+                container.appendChild(itemEl);
+            });
+        }
+
+        function showFact(item) {
+            if (!gameState.learnedFacts.has(item.id)) {
+                gameState.learnedFacts.add(item.id);
+                gameState.factsLearned++;
+                updateDisplay();
+            }
+            
+            document.getElementById('fact-icon').textContent = item.fact.icon;
+            document.getElementById('fact-title').textContent = item.fact.title;
+            document.getElementById('fact-content').textContent = item.fact.content;
+            document.getElementById('popup-overlay').style.display = 'block';
+            document.getElementById('fact-popup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup-overlay').style.display = 'none';
+            document.getElementById('fact-popup').style.display = 'none';
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+            e.target.style.opacity = '0.5';
+        }
+
+        function handleDragEnd(e) {
+            e.target.style.opacity = '1';
+        }
+
+        // Add drag events to drop zones
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', handleDragOver);
+            zone.addEventListener('drop', handleDrop);
+            zone.addEventListener('dragleave', handleDragLeave);
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const itemId = e.dataTransfer.getData('text/plain');
+            const itemEl = document.querySelector(`[data-id="${itemId}"]`);
+            const itemData = plasticItems.find(item => item.id === itemId);
+            const zoneType = e.currentTarget.dataset.type;
+            
+            if (itemData.type === zoneType) {
+                // Correct drop
+                e.currentTarget.classList.add('correct');
+                itemEl.remove();
+                gameState.itemsSorted++;
+                
+                setTimeout(() => {
+                    e.currentTarget.classList.remove('correct');
+                }, 800);
+                
+                if (gameState.itemsSorted >= gameState.totalItems) {
+                    setTimeout(showCompletion, 1000);
+                }
+            } else {
+                // Incorrect drop
+                e.currentTarget.classList.add('incorrect');
+                gameState.planetHealth -= 5;
+                
+                setTimeout(() => {
+                    e.currentTarget.classList.remove('incorrect');
+                }, 600);
+            }
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const progress = (gameState.itemsSorted / gameState.totalItems) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        function showCompletion() {
+            const randomAction = dailyActions[Math.floor(Math.random() * dailyActions.length)];
+            document.getElementById('daily-action').textContent = randomAction;
+            document.getElementById('completion-screen').style.display = 'flex';
+        }
+
+        function restartGame() {
+            gameState = {
+                itemsSorted: 0,
+                factsLearned: 0,
+                totalItems: 12,
+                planetHealth: 100,
+                learnedFacts: new Set()
+            };
+            
+            document.getElementById('completion-screen').style.display = 'none';
+            createItems();
+            updateDisplay();
+        }
+
+        // Initialize the game
+        createItems();
+        updateDisplay();
+    </script>
+</body>
+</html>

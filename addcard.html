@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Addition Cards — 15 Quiz Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    :root{
+      --bg:#f7f7ff;
+      --ink:#1a1033;
+      --muted:#6a6a7a;
+      --ok:#22c55e;
+      --bad:#ef4444;
+      --cardShadow: 0 10px 20px rgba(0,0,0,.12), 0 6px 6px rgba(0,0,0,.08);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--ink);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .app{
+      width:min(980px, 96vw);
+      margin:auto;
+      padding: clamp(14px, 2.5vw, 26px);
+    }
+    .title{
+      text-align:center;
+      font-weight:800;
+      font-size:clamp(26px, 3.8vw, 44px);
+      margin: 4px 0 18px;
+      letter-spacing:.3px;
+      color: white;
+    }
+
+    .equation{
+      display:grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: clamp(10px, 1.5vw, 20px);
+      align-items:center;
+      justify-items:center;
+      margin: 14px 0 18px;
+    }
+    .symbol{
+      font-size: clamp(42px, 6vw, 70px);
+      font-weight: 900;
+      color:white;
+      text-shadow: 0 1px 0 rgba(0,0,0,.3);
+    }
+    .card{
+      width: 100%;
+      aspect-ratio: 3/4;
+      border-radius: var(--radius);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: var(--cardShadow);
+      user-select:none;
+      transition: transform .12s ease, background .2s ease;
+      background: #bef;
+    }
+    .card span{
+      font-size: clamp(60px, 10vw, 120px);
+      font-weight: 900;
+      color:#000;
+    }
+    .card.pulse{ transform: scale(1.02); }
+
+    .choices{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(10px, 1.5vw, 18px);
+      margin: 18px 0 8px;
+    }
+    .choice{
+      border: none;
+      border-radius: 18px;
+      padding: clamp(18px, 2.4vw, 22px);
+      font-size: clamp(26px, 3.2vw, 36px);
+      font-weight:800;
+      background: white;
+      box-shadow: var(--cardShadow);
+      cursor:pointer;
+      transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+      color: white;
+    }
+    .choice:hover{ transform: translateY(-2px); }
+    .choice.correct{ background: #d1fae5; outline: 3px solid var(--ok); color: #000; }
+    .choice.wrong{ background: #ffe4e6; outline: 3px solid var(--bad); color: #000; }
+
+    .status{
+      min-height: 46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: clamp(16px, 2.1vw, 20px);
+      gap:10px;
+      color: white;
+      text-align:center;
+      margin-top: 6px;
+    }
+    .status.ok{ color: #d1fae5; }
+    .status.bad{ color: #fecaca; }
+
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content: center;
+      margin-top: 8px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      border:none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: clamp(16px, 2.2vw, 18px);
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: var(--cardShadow);
+      background:white;
+    }
+    .btn.primary{ background:#111827; color:#fff; }
+    .btn.ghost{ background:#ffffff; }
+    .btn:disabled{
+      opacity:.55; cursor:not-allowed; transform:none;
+    }
+
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin: 10px 2px 6px;
+      color: white;
+      font-weight:700;
+      font-size: clamp(14px, 2vw, 16px);
+    }
+
+    /* Small screens */
+    @media (max-width:640px){
+      .equation{ grid-template-columns: 1fr auto 1fr; grid-template-rows: auto auto; }
+      .eq-equal{ grid-column: 2 / 3; grid-row: 2; }
+      .eq-question{ grid-column: 3 / 4; grid-row: 2; }
+      .choices{ grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="title">What's the correct answer?</div>
+
+    <div class="meta">
+      <div id="progress">Question 1 / 15</div>
+      <div id="score">Score: 0</div>
+    </div>
+
+    <div class="equation">
+      <div class="card" id="cardA"><span id="numA">2</span></div>
+      <div class="symbol">+</div>
+      <div class="card" id="cardB"><span id="numB">4</span></div>
+      <div class="symbol eq-equal">=</div>
+      <div class="card eq-question" id="cardQ"><span>?</span></div>
+    </div>
+
+    <div class="choices" id="choices"></div>
+
+    <div id="status" class="status">Pick the right sum!</div>
+
+    <div class="controls">
+      <button id="tryBtn" class="btn ghost">Try Again</button>
+      <button id="nextBtn" class="btn primary">Next ▶</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== Helpers =====
+    const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const shuffle = arr => arr.map(v => [Math.random(), v]).sort((a,b)=>a[0]-b[0]).map(p=>p[1]);
+
+    // Pastel color generator (nice random card colors)
+    function randomPastel(){
+      const h = rnd(0, 360);
+      const s = rnd(65, 90);
+      const l = rnd(60, 80);
+      return `hsl(${h} ${s}% ${l}%)`;
+    }
+
+    // Different vibrant colors for option buttons
+    function randomOptionColor(){
+      const colors = [
+        'linear-gradient(135deg, #a7f3d0, #10b981)',
+        'linear-gradient(135deg, #93c5fd, #3b82f6)', 
+        'linear-gradient(135deg, #fbbf24, #f59e0b)',
+        'linear-gradient(135deg, #fb7185, #e11d48)',
+        'linear-gradient(135deg, #c084fc, #8b5cf6)',
+        'linear-gradient(135deg, #34d399, #059669)',
+        'linear-gradient(135deg, #60a5fa, #2563eb)',
+        'linear-gradient(135deg, #fcd34d, #f59e0b)'
+      ];
+      return colors[rnd(0, colors.length - 1)];
+    }
+
+    // Compliments for correct answers
+    const COMPLIMENTS = [
+      "Brilliant!", "Nice one!", "You nailed it!", "Math wizard!",
+      "Excellent!", "Boom! Correct!", "Keep it up!", "Sharp mind!",
+      "Spot on!", "Perfect!", "Super!", "Great job!"
+    ];
+
+    // ===== Game State =====
+    const TOTAL = 15;
+    let index = 0;
+    let score = 0;
+    const questions = [];
+
+    // Build 15 different addition questions (operands 0..9), no duplicate pairs
+    const seen = new Set();
+    while (questions.length < TOTAL) {
+      const a = rnd(0, 9);
+      const b = rnd(0, 9);
+      const key = a <= b ? `${a}+${b}` : `${b}+${a}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        questions.push({ a, b, ans: a + b });
+      }
+    }
+
+    // ===== DOM Refs =====
+    const cardA = document.getElementById('cardA');
+    const cardB = document.getElementById('cardB');
+    const cardQ = document.getElementById('cardQ');
+    const numA  = document.getElementById('numA');
+    const numB  = document.getElementById('numB');
+    const choicesWrap = document.getElementById('choices');
+    const statusBox = document.getElementById('status');
+    const tryBtn = document.getElementById('tryBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progress = document.getElementById('progress');
+    const scoreBox = document.getElementById('score');
+
+    // ===== Question Rendering =====
+    function makeChoices(correct){
+      const opts = new Set([correct]);
+      // Create 3 distractors near the correct value but unique and valid
+      while (opts.size < 4) {
+        const delta = [1,2,3,4][rnd(0,3)] * (Math.random() < .5 ? -1 : 1);
+        const v = Math.max(0, Math.min(18, correct + delta + rnd(-1,1)));
+        if (v !== correct) opts.add(v);
+      }
+      return shuffle([...opts]);
+    }
+
+    function paintCards(){
+      [cardA, cardB, cardQ].forEach(c => {
+        c.style.background = randomPastel();
+        c.classList.add('pulse');
+        setTimeout(()=>c.classList.remove('pulse'), 140);
+      });
+    }
+
+    function renderQuestion(){
+      if (index >= TOTAL) return renderEnd();
+
+      const q = questions[index];
+      numA.textContent = q.a;
+      numB.textContent = q.b;
+      paintCards();
+
+      // Build choice buttons
+      choicesWrap.innerHTML = '';
+      const options = makeChoices(q.ans);
+      options.forEach(val => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.textContent = val;
+        btn.style.background = randomOptionColor();
+        btn.addEventListener('click', () => checkAnswer(btn, val === q.ans));
+        choicesWrap.appendChild(btn);
+      });
+
+      // UI state
+      statusBox.className = 'status';
+      statusBox.textContent = 'Pick the right sum!';
+      nextBtn.disabled = true;
+      tryBtn.disabled = false;
+      progress.textContent = `Question ${index+1} / ${TOTAL}`;
+      scoreBox.textContent = `Score: ${score}`;
+    }
+
+    function disableChoices(){
+      document.querySelectorAll('.choice').forEach(b => b.disabled = true);
+    }
+    function enableChoices(){
+      document.querySelectorAll('.choice').forEach(b => { 
+        b.disabled = false; 
+        b.classList.remove('wrong','correct'); 
+        b.style.background = randomOptionColor();
+      });
+    }
+
+    // ===== Answer Handling =====
+    function checkAnswer(btn, isCorrect){
+      disableChoices();
+      if (isCorrect){
+        btn.classList.add('correct');
+        score++;
+        statusBox.className = 'status ok';
+        statusBox.textContent = COMPLIMENTS[rnd(0, COMPLIMENTS.length-1)] + ' Tap NEXT to continue.';
+        scoreBox.textContent = `Score: ${score}`;
+        nextBtn.disabled = false;
+        tryBtn.disabled = true;
+
+        // Confetti burst!
+        confetti({ particleCount: 140, spread: 70, origin: { y: 0.6 } });
+      } else {
+        btn.classList.add('wrong');
+        statusBox.className = 'status bad';
+        statusBox.textContent = 'Not quite. Try again or go to next.';
+        // allow retry on same question
+        tryBtn.disabled = false;
+        nextBtn.disabled = false;
+      }
+    }
+
+    // ===== Navigation =====
+    tryBtn.addEventListener('click', () => {
+      enableChoices();
+      statusBox.className = 'status';
+      statusBox.textContent = 'Give it another shot!';
+    });
+
+    nextBtn.addEventListener('click', () => {
+      index++;
+      renderQuestion();
+    });
+
+    function renderEnd(){
+      // Final screen
+      const pct = Math.round((score / TOTAL) * 100);
+      document.querySelector('.equation').style.display = 'none';
+      choicesWrap.innerHTML = '';
+      statusBox.className = 'status ok';
+      statusBox.innerHTML = `Done! You scored <b>${score}/${TOTAL}</b> (${pct}%).`;
+      nextBtn.textContent = 'Play Again';
+      tryBtn.style.display = 'none';
+      nextBtn.disabled = false;
+      nextBtn.onclick = () => location.reload();
+      progress.textContent = 'Finished';
+      scoreBox.textContent = `Score: ${score}`;
+      confetti({ particleCount: 240, spread: 100, origin: { y: 0.6 } });
+    }
+
+    // Start game
+    renderQuestion();
+  </script>
+</body>
+</html>

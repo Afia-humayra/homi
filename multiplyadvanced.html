@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Multiplication Magic 🌟</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            padding: 10px;
+            color: #333;
+            overflow: hidden;
+        }
+
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 2em;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+
+
+        .problem-display {
+            text-align: center;
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .items-pool {
+            flex: 1;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-radius: 20px;
+            padding: 15px;
+            border: 3px dashed #ff9f43;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .pool-title {
+            text-align: center;
+            font-size: 1.1em;
+            color: #e55039;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .items-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .groups-area {
+            flex: 2;
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border-radius: 20px;
+            padding: 15px;
+            border: 3px solid #4caf50;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .groups-title {
+            text-align: center;
+            font-size: 1.1em;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .groups-container {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .group {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px dashed #4caf50;
+            border-radius: 15px;
+            padding: 10px;
+            min-height: 60px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .group.highlight {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            transform: scale(1.05);
+        }
+
+        .group-label {
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            background: #4caf50;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: grab;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            user-select: none;
+            position: relative;
+        }
+
+        .item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .item.dragging {
+            cursor: grabbing;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+            opacity: 0.8;
+        }
+
+        .group.drag-over {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            transform: scale(1.02);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-check {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-next {
+            background: linear-gradient(45deg, #feca57, #ff9ff3);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            text-align: center;
+            font-size: 1.2em;
+            min-height: 30px;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #27ae60;
+        }
+
+        .error {
+            color: #e74c3c;
+        }
+
+        .celebration {
+            animation: celebration 0.6s ease-in-out;
+        }
+
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pop-animation {
+            animation: pop 0.5s ease-in-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .instruction {
+            text-align: center;
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            border-left: 4px solid #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">🌟 Multiplication Magic 🌟</h1>
+        </div>
+
+
+
+        <div class="problem-display" id="problem">3 × 4 = ?</div>
+        
+        <div class="instruction" id="instruction">
+            Drag the stars from the magic box into the groups below! 🌟
+        </div>
+
+        <div class="game-area">
+            <div class="items-pool">
+                <div class="pool-title">✨ Magic Box ✨</div>
+                <div class="items-container" id="itemsContainer"></div>
+            </div>
+
+            <div class="groups-area">
+                <div class="groups-title" id="groupsTitle">Make 3 groups of 4 stars each!</div>
+                <div class="groups-container" id="groupsContainer"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-check" id="checkBtn" onclick="checkAnswer()">🔍 Check Answer</button>
+            <button class="btn btn-next" id="nextBtn" onclick="nextProblem()" style="display: none;">➡️ Next Problem</button>
+            <button class="btn btn-reset" id="resetBtn" onclick="resetProblem()">🔄 Try Again</button>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let currentProblem = { a: 3, b: 4 };
+        let problems = [
+            {a: 2, b: 3}, {a: 3, b: 2}, {a: 2, b: 4}, {a: 4, b: 2},
+            {a: 3, b: 3}, {a: 2, b: 5}, {a: 5, b: 2}, {a: 3, b: 4},
+            {a: 4, b: 3}, {a: 2, b: 6}, {a: 6, b: 2}, {a: 4, b: 4},
+            {a: 3, b: 5}, {a: 5, b: 3}, {a: 4, b: 5}, {a: 5, b: 4}
+        ];
+        let currentProblemIndex = 0;
+
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(frequency, duration, type = 'sine') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function popSound() {
+            playSound(800, 0.1, 'square');
+        }
+
+        function successSound() {
+            playSound(523, 0.2);
+            setTimeout(() => playSound(659, 0.2), 150);
+            setTimeout(() => playSound(784, 0.3), 300);
+        }
+
+        function errorSound() {
+            playSound(200, 0.3, 'sawtooth');
+        }
+
+        function initializeProblem() {
+            currentProblem = problems[currentProblemIndex];
+            const { a, b } = currentProblem;
+            
+            document.getElementById('problem').textContent = `${a} × ${b} = ?`;
+            document.getElementById('groupsTitle').textContent = `Make ${a} groups of ${b} stars each!`;
+            document.getElementById('instruction').textContent = `Drag the stars from the magic box into the groups below! 🌟`;
+            
+            createItems();
+            createGroups();
+            updateDisplay();
+        }
+
+        function createItems() {
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = '';
+            
+            const totalItems = currentProblem.a * currentProblem.b;
+            for (let i = 0; i < totalItems; i++) {
+                const item = document.createElement('div');
+                item.className = 'item';
+                item.textContent = '⭐';
+                item.draggable = true;
+                item.id = `item-${i}`;
+                
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                
+                container.appendChild(item);
+            }
+        }
+
+        function createGroups() {
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = '';
+            
+            const { a, b } = currentProblem;
+            container.style.gridTemplateColumns = `repeat(${Math.min(a, 4)}, 1fr)`;
+            
+            for (let i = 0; i < a; i++) {
+                const group = document.createElement('div');
+                group.className = 'group';
+                group.id = `group-${i}`;
+                
+                const label = document.createElement('div');
+                label.className = 'group-label';
+                label.textContent = `Group ${i + 1}`;
+                group.appendChild(label);
+                
+                group.addEventListener('dragover', handleDragOver);
+                group.addEventListener('drop', handleDrop);
+                group.addEventListener('dragenter', handleDragEnter);
+                group.addEventListener('dragleave', handleDragLeave);
+                
+                container.appendChild(group);
+            }
+        }
+
+        let draggedItem = null;
+
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.outerHTML);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.closest('.group').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.target.closest('.group').contains(e.relatedTarget)) {
+                e.target.closest('.group').classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const group = e.target.closest('.group');
+            group.classList.remove('drag-over');
+            
+            if (draggedItem) {
+                group.appendChild(draggedItem);
+                draggedItem.classList.add('pop-animation');
+                popSound();
+                
+                setTimeout(() => {
+                    draggedItem.classList.remove('pop-animation');
+                }, 500);
+                
+                draggedItem = null;
+            }
+        }
+
+        function checkAnswer() {
+            const groups = document.querySelectorAll('.group');
+            const { a, b } = currentProblem;
+            let correct = true;
+            let totalItems = 0;
+
+            // Check each group
+            groups.forEach((group, index) => {
+                const items = group.querySelectorAll('.item');
+                totalItems += items.length;
+                
+                if (items.length !== b) {
+                    correct = false;
+                }
+                
+                // Highlight group during checking
+                group.classList.add('highlight');
+                setTimeout(() => {
+                    group.classList.remove('highlight');
+                }, 300 * (index + 1));
+            });
+
+            // Check if all items are used
+            const itemsInPool = document.getElementById('itemsContainer').querySelectorAll('.item').length;
+            if (itemsInPool > 0 || totalItems !== a * b) {
+                correct = false;
+            }
+
+            setTimeout(() => {
+                showResult(correct);
+            }, 300 * groups.length);
+        }
+
+        function showResult(correct) {
+            const resultDiv = document.getElementById('result');
+            const checkBtn = document.getElementById('checkBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (correct) {
+                resultDiv.innerHTML = `🎉 Excellent! ${currentProblem.a} × ${currentProblem.b} = ${currentProblem.a * currentProblem.b} 🎉`;
+                resultDiv.className = 'result success celebration';
+                
+                successSound();
+                
+                checkBtn.style.display = 'none';
+                nextBtn.style.display = 'inline-block';
+            } else {
+                resultDiv.innerHTML = `🤔 Not quite right! Try again! Each group needs exactly ${currentProblem.b} stars.`;
+                resultDiv.className = 'result error';
+                errorSound();
+            }
+            
+            updateDisplay();
+        }
+
+        function nextProblem() {
+            currentProblemIndex = (currentProblemIndex + 1) % problems.length;
+            
+            document.getElementById('result').textContent = '';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            initializeProblem();
+        }
+
+        function resetProblem() {
+            document.getElementById('result').textContent = '';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // Move all items back to pool
+            const items = document.querySelectorAll('.item');
+            const pool = document.getElementById('itemsContainer');
+            
+            items.forEach(item => {
+                pool.appendChild(item);
+                item.classList.add('pop-animation');
+                setTimeout(() => {
+                    item.classList.remove('pop-animation');
+                }, 200);
+            });
+            
+            popSound();
+        }
+
+        function updateDisplay() {
+            // No score to update anymore
+        }
+
+        // Initialize the game
+        initializeProblem();
+
+        // Enable audio context on first user interaction
+        document.addEventListener('click', function initAudio() {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            document.removeEventListener('click', initAudio);
+        }, { once: true });
+    </script>
+</body>
+</html>
